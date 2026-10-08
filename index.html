@@ -22,7 +22,9 @@
   --ff:'Cairo','Tajawal',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
   --hh:66px;
 }
-html{scroll-behavior:smooth}
+/* NOTE: no global scroll-behavior:smooth — on phones it makes the view "slide"
+   every time an input is focused (the browser scrolls it into view). */
+html{scroll-behavior:auto; -webkit-text-size-adjust:100%; text-size-adjust:100%}
 html[dir=ltr] body{font-family:'Tajawal','Cairo',system-ui,sans-serif}
 body{
   margin:0; background:var(--bg); color:var(--ink); font-family:var(--ff);
@@ -100,6 +102,7 @@ ul{margin:0 0 .8rem; padding-inline-start:1.2rem}
 .chip.bl{background:rgba(90,140,255,.12); border-color:rgba(90,140,255,.35); color:#bcd2ff}
 .divider{height:1px; background:linear-gradient(90deg,transparent,var(--line),transparent); margin:22px 0}
 .note{background:rgba(239,196,99,.06); border:1px dashed var(--line); border-radius:var(--rad2); padding:12px 15px; font-size:.9rem}
+.code{background:#0d0d15; border:1px solid var(--line2); border-radius:var(--rad2); padding:12px 14px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.86rem; line-height:1.7; word-break:break-all; overflow-wrap:anywhere; color:var(--gl); letter-spacing:.3px}
 /* ============ 5. SECTION HEAD ============ */
 .sec{padding:44px 0; position:relative}
 .sec-h{margin-bottom:26px; position:relative}
@@ -111,7 +114,8 @@ ul{margin:0 0 .8rem; padding-inline-start:1.2rem}
 /* ============ 6. LOGIN GATE ============ */
 .gate{position:fixed; inset:0; z-index:900; display:grid; place-items:center; padding:22px; background:
   radial-gradient(ellipse at 50% 0%,rgba(224,27,43,.22),transparent 60%),
-  radial-gradient(ellipse at 50% 100%,rgba(239,196,99,.14),transparent 60%),#05050a; overflow-y:auto}
+  radial-gradient(ellipse at 50% 100%,rgba(239,196,99,.14),transparent 60%),#05050a;
+  overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; width:100%; max-width:100%}
 .gate-spot{position:absolute; inset:0; background:conic-gradient(from 200deg at 50% -10%,transparent 0deg,rgba(255,255,255,.05) 20deg,transparent 40deg,transparent 320deg,rgba(255,255,255,.05) 340deg,transparent 360deg); animation:spot 9s linear infinite; pointer-events:none}
 .gate-in{width:100%; max-width:470px; position:relative; z-index:3; text-align:center; animation:pop .7s cubic-bezier(.2,.8,.3,1)}
 .gate-logo{width:104px; height:104px; margin:0 auto 12px; border-radius:28px; background:linear-gradient(145deg,#1a1014,#0c0c12); border:2px solid var(--line); display:grid; place-items:center; font-size:52px; box-shadow:0 0 0 6px rgba(224,27,43,.08),0 0 44px rgba(224,27,43,.35); animation:pulseGlow 3.6s ease-in-out infinite}
@@ -190,9 +194,9 @@ table.tbl tr:hover td{background:rgba(255,255,255,.025)}
 table.tbl tr:last-child td{border-bottom:0}
 .tbl-acts{display:flex; gap:6px; flex-wrap:wrap}
 /* ============ 13. MODAL ============ */
-.modal{position:fixed; inset:0; z-index:800; display:none; place-items:center; padding:16px; background:rgba(3,3,6,.82); backdrop-filter:blur(6px); overflow-y:auto}
+.modal{position:fixed; inset:0; z-index:800; display:none; place-items:center; padding:16px; background:rgba(3,3,6,.82); backdrop-filter:blur(6px); overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; width:100%; max-width:100%}
 .modal.on{display:grid}
-.modal-box{width:100%; max-width:620px; background:linear-gradient(180deg,#13131c,#0d0d14); border:1px solid var(--line); border-radius:22px; padding:22px; box-shadow:var(--sh); animation:pop .4s cubic-bezier(.2,.8,.3,1); max-height:92vh; overflow-y:auto}
+.modal-box{width:100%; max-width:620px; background:linear-gradient(180deg,#13131c,#0d0d14); border:1px solid var(--line); border-radius:22px; padding:22px; box-shadow:var(--sh); animation:pop .4s cubic-bezier(.2,.8,.3,1); max-height:92vh; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain}
 .modal-h{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px}
 .modal-h h3{margin:0}
 .x{background:none; border:1px solid var(--line); border-radius:10px; width:36px; height:36px; cursor:pointer; font-size:17px; flex:0 0 auto}
@@ -293,7 +297,8 @@ img,svg,video,canvas{max-width:100%}
   .ft-grid{grid-template-columns:1fr 1fr}
   .sec{padding:38px 0}
   nav.main{display:none}
-  nav.main.open{display:flex; position:absolute; top:var(--hh); inset-inline:0; background:#0a0a11; border-bottom:1px solid var(--line); flex-direction:column; padding:12px; gap:6px; z-index:130; max-height:70vh; overflow-y:auto}
+  nav.main.open{display:flex; position:absolute; top:var(--hh); inset-inline:0; background:#0a0a11; border-bottom:1px solid var(--line); flex-direction:column; padding:12px; gap:6px; z-index:130; max-height:70vh; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain}
+  nav.main.open a{white-space:normal; width:100%; overflow-wrap:anywhere}
   .burger{display:block}
   .tabs{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:6px; scrollbar-width:thin}
   .tabs button{flex:0 0 auto; white-space:nowrap}
@@ -341,6 +346,71 @@ img,svg,video,canvas{max-width:100%}
   .me-stats{grid-template-columns:1fr 1fr}
   .dash .d{font-size:0}
 }
+/* ============ 18. MOBILE HARDENING — no horizontal shake / sideways scroll ============ */
+/* hard guarantees (win over every other rule in the file) */
+html,body{overflow-x:hidden !important; width:100%; max-width:100%; overscroll-behavior-x:none}
+.gate,.modal,.modal-box,nav.main.open,header.top{overflow-x:hidden !important}
+/* note: .tbl-wrap and nav.main are deliberately NOT clamped — they must scroll sideways inside themselves */
+@supports (overflow:clip){ html,body{overflow-x:clip !important} }
+html,body{max-width:100%}
+body{overflow-wrap:anywhere; -webkit-text-size-adjust:100%}
+.wrap,main.wrap,.sec,header.top,.mq,.hero,.store-hero,.gate,.gate-in,.gate-card,.card,.grid{max-width:100%}
+img,svg,video,iframe,canvas,table{max-width:100%}
+.tbl-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; max-width:100%}
+.tabs{overscroll-behavior-x:contain}
+*{min-width:0}
+.punch{will-change:transform,opacity; contain:strict}
+.reveal{will-change:auto}
+/* keep the shake effect subtle so it never drags the page sideways */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+/* runtime self-heal: anything the guard clamps gets this */
+.of-fix{max-width:100% !important; overflow-x:hidden !important}
+#ofPanel{display:none; position:fixed; z-index:9999; inset-inline:8px; bottom:8px; max-height:46vh; overflow:auto;
+  background:rgba(6,6,10,.97); border:1px solid var(--gl); border-radius:14px; padding:12px 14px;
+  font-family:ui-monospace,Consolas,monospace; font-size:.74rem; line-height:1.6; color:#ffd9a0; direction:ltr; text-align:left}
+#ofPanel b{display:block; color:#fff; font-size:.8rem; margin-bottom:6px}
+.ofp-row{border-top:1px dashed rgba(255,255,255,.14); padding:3px 0; word-break:break-all}
+@media(max-width:820px){
+  .fx-glow{filter:blur(44px); opacity:.2; animation:none !important}
+  .fx-grid{background-size:40px 40px}
+  /* iOS repaints the whole sticky header on every scroll tick when backdrop-filter is on — that IS the shaking */
+  header.top{backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:rgba(8,8,13,.97)}
+  .fx-glow, .gate-spot{animation:none !important}
+  .mq-in{animation-duration:22s}
+  .sec{padding:32px 0}
+  /* THE typing-shake fixes --------------------------------------------- */
+  /* 1) iOS/Chrome auto-zoom whenever a field smaller than 16px gets focus */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),
+  select, textarea, .inp{font-size:16px !important; line-height:1.4}
+  /* 2) anchor overlays to the TOP so the virtual keyboard never re-centres them */
+  .gate, .modal{align-items:flex-start; justify-items:center; padding-top:18px; padding-bottom:36px}
+  .modal-box{max-height:84vh}
+  /* 3) kill rubber-band bounce + double-tap zoom jitter */
+  html, body{overscroll-behavior:none}
+  button, a, .mini, .ubox, .tabs button, label{touch-action:manipulation}
+  /* 4) no smooth scrolling while typing/focusing */
+  html{scroll-behavior:auto}
+  *{-webkit-overflow-scrolling:touch}
+}
+@media(max-width:620px){
+  .fab{inset-inline-end:10px; bottom:10px; gap:8px}
+  .fab button,.fab a{width:46px; height:46px; font-size:19px}
+  .sprog{height:2px}
+  .mq span{padding:0 14px; font-size:.74rem}
+  .gate{padding:14px}
+  .gate-in{max-width:100%}
+  table.tbl{min-width:520px; font-size:.8rem}
+  .tbl-wrap{border-radius:12px; border:1px solid var(--line)}
+  .punch{width:90px; height:90px}
+}
+@media(max-width:380px){
+  .top-in{gap:8px; padding:0 10px}
+  .ubox{padding:3px 8px 3px 4px}
+  .ubox .av{width:26px; height:26px}
+}
+@media(prefers-reduced-motion:reduce){
+  .fx-glow,.fx-grid,.mq-in,.gate-spot,.gate-logo{animation:none !important}
+}
 @media print{.bgfx,.fab,header.top,.mq,.tabs,.tbl-acts{display:none}}
 </style>
 </head>
@@ -379,6 +449,7 @@ img,svg,video,canvas{max-width:100%}
           <label for="lu" data-i18n="f.username">اسم المستخدم (اسم اللاعب)</label>
           <input class="inp" id="lu" type="text" placeholder="اسم المستخدم" autocomplete="username" required>
           <div class="hint" data-i18n="gate.u.hint">اكتب اسمك كما هو مسجَّل بالعربية أو بالإنجليزية، ثم كلمة المرور الخاصة بك.</div>
+          <div class="hint" data-i18n="gate.link.hint">لو الكابتن عملك حساب جديد ومش قادر تدخل، اطلب منه «رابط الدخول» وافتحه من موبايلك مرة واحدة.</div>
         </div>
         <div class="fld">
           <label for="lp" data-i18n="f.password">كلمة المرور</label>
@@ -1295,7 +1366,20 @@ function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMon
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function toInt(v){ const n=parseInt(v,10); return isNaN(n)?0:n; }
 /* usernames are the players'/captain's own names — compare them space/dash/case-insensitively */
-function normUser(s){ return String(s==null?'':s).toLowerCase().replace(/[\s_\-\.\u0640]/g,'').trim(); }
+const AR_DIG='٠١٢٣٤٥٦٧٨٩', FA_DIG='۰۱۲۳۴۵۶۷۸۹';
+function normUser(s){
+  return String(s==null?'':s)
+    .replace(/[\u064B-\u0652\u0670\u0640\u200b-\u200f\u00ad]/g,'')   /* tashkeel + tatweel + zero-width */
+    .replace(/[أإآٱٲٳٵ]/g,'ا')                                      /* all alef forms -> ا */
+    .replace(/[ىئ]/g,'ي').replace(/يي+/g,'ي')                        /* ى / ئ -> ي */
+    .replace(/ة/g,'ه')                                              /* ة -> ه */
+    .replace(/ؤ/g,'و')
+    .replace(/گ/g,'ك').replace(/ک/g,'ك').replace(/ی/g,'ي')
+    .replace(/[٠-٩]/g,function(d){ return AR_DIG.indexOf(d); })
+    .replace(/[۰-۹]/g,function(d){ return FA_DIG.indexOf(d); })
+    .replace(/[\s_\-\.\u060C,\u061B;:!?'"()\[\]«»]/g,'')              /* spacing + punctuation */
+    .toLowerCase();
+}
 function validUserName(s){
   const v=String(s||'').trim();
   if(v.length<2 || v.length>40) return false;
@@ -1306,6 +1390,7 @@ function validUserName(s){
 const EN = {
  'gate.sub':'A boxing academy — your gateway to the ring. Sign in to reach your programs and data.',
  'f.username':'Username (player name)','f.password':'Password','gate.u.hint':'Type your name exactly as registered — in Arabic or English — then your password.',
+ 'gate.link.hint':'If the coach created your account and you cannot sign in, ask him for the "sign-in link" and open it once on your phone.',
  'gate.terms':'I commit to the club rules and the coach instructions.','btn.login':'Enter the club',
  'btn.newreg':'New subscription','btn.wa':'WhatsApp','gate.note':'No account yet? Tap “New subscription”, fill your data, and the captain gets an instant WhatsApp notification.',
  'btn.sound':'Click sound','nav.store':'Store','nav.home':'Home','nav.about':'About the Coach','nav.programs':'Training Programs',
@@ -1469,13 +1554,36 @@ function applyLang(lang){
 }
 
 /* ---------- sound (subtle boxing click) ---------- */
-let AC = null;
-function audio(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; } } return AC; }
+let AC = null, AUDIO_UNLOCKED = false;
+function audio(){
+  if(!AC){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return null;
+    try{ AC = new Ctx(); AC.onstatechange=function(){ if(AC&&AC.state==='running') AUDIO_UNLOCKED=true; }; }
+    catch(e){ AC=null; }
+  }
+  return AC;
+}
+/* browsers (especially iOS/Safari) keep the audio engine asleep until a real user gesture */
+function unlockAudio(){
+  const c=audio(); if(!c) return;
+  try{ if(c.state!=='running') c.resume(); }catch(e){}
+  if(c.state==='running') AUDIO_UNLOCKED=true;
+}
+function bindAudioUnlock(){
+  const run=function(){ unlockAudio(); };
+  ['pointerdown','touchstart','touchend','mousedown','keydown','click'].forEach(function(ev){
+    document.addEventListener(ev, run, {passive:true, capture:true});
+  });
+  window.addEventListener('focus', run);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) run(); });
+}
 function punch(vol){
   if(!S.sound) return;
   const c = audio(); if(!c) return;
-  const v = (vol||0.05);
-  const t0 = c.currentTime;
+  if(c.state!=='running'){ try{ c.resume(); }catch(e){} }
+  const v = (vol||0.06);
+  const t0 = c.currentTime + 0.001;
   const o = c.createOscillator(), g = c.createGain();
   o.type='sine'; o.frequency.setValueAtTime(170,t0);
   o.frequency.exponentialRampToValueAtTime(48,t0+0.16);
@@ -1498,7 +1606,10 @@ function setSound(on, quiet){
     if(sel==='#gateSound') el.innerHTML = ic+' <span>'+ (S.lang==='en'?'Click sound':'صوت النقر') +'</span>';
     else if(sel==='#soundBtn') el.textContent = ic;
     else el.textContent = ic;
+    el.classList.toggle('off', !S.sound);
+    el.title = S.sound ? (S.lang==='en'?'Click sound: ON':'صوت البوكس: مفعّل') : (S.lang==='en'?'Click sound: OFF':'صوت البوكس: مغلق');
   });
+  if(S.sound){ unlockAudio(); if(!quiet) punch(0.09); }
   const cb=$('#setSound'); if(cb) cb.checked = S.sound;
   if(S.sound && !quiet) punch(0.045);
 }
@@ -1750,6 +1861,64 @@ function renderData(){
   const n=$('#dataNote'); if(n) n.textContent = isAdm? t('dt.admin') : t('dt.private');
 }
 
+/* ---------- runtime layout guard: finds + clamps anything sticking out sideways ---------- */
+let OF_T=null, OF_LAST=[];
+const OF_KEEP_OVERFLOW='#app,body,html,main.wrap,.wrap,.page,.sec,header.top,.tbl-wrap,nav.main,.tabs';
+function ofClippedBy(el){
+  let p=el.parentElement;
+  while(p && p!==document.documentElement){
+    const ox=getComputedStyle(p).overflowX;
+    if(ox==='auto'||ox==='scroll'||ox==='hidden'||ox==='clip') return true;
+    p=p.parentElement;
+  }
+  return false;
+}
+function ofFind(){
+  const cw=document.documentElement.clientWidth, out=[];
+  const roots=['#app','#gate'].map(function(s){ return $(s); }).filter(Boolean);
+  roots.forEach(function(root){
+    if(getComputedStyle(root).display==='none') return;
+    const list=root.querySelectorAll('*');
+    for(let i=0;i<list.length;i++){
+      const el=list[i];
+      if(el.id==='ofPanel'||el.closest('#ofPanel')) continue;
+      const cs=getComputedStyle(el);
+      if(cs.position==='fixed'||cs.display==='none'||cs.visibility==='hidden'||Number(cs.opacity)===0) continue;
+      const r=el.getBoundingClientRect();
+      if(!r.width&&!r.height) continue;
+      const over=Math.max(r.right-cw, -r.left);
+      if(over>1.5 && !ofClippedBy(el)) out.push({el:el, over:Math.round(over), tag:el.tagName.toLowerCase()+(el.id?'#'+el.id:(el.className?'.'+String(el.className).trim().split(/\s+/).slice(0,3).join('.'):''))});
+    }
+  });
+  return out;
+}
+function ofPanel(bad){
+  let p=$('#ofPanel');
+  if(!p){ p=document.createElement('div'); p.id='ofPanel'; document.body.appendChild(p); }
+  p.innerHTML='<b>🔎 LAYOUT DIAGNOSTIC — '+bad.length+' element(s) sticking out sideways</b>'+
+    bad.slice(0,16).map(function(b){ return '<div class="ofp-row">'+esc(b.tag)+'  →  '+b.over+'px</div>'; }).join('')+
+    '<button class="btn sm mt2" id="ofPanelX">close</button>';
+  p.style.display='block';
+  const x=$('#ofPanelX'); if(x) x.onclick=function(){ p.style.display='none'; };
+}
+function ofFix(report){
+  const cw=document.documentElement.clientWidth;
+  const bad=ofFind();
+  OF_LAST=bad;
+  bad.forEach(function(b){
+    const el=b.el;
+    el.style.maxWidth=cw+'px';
+    el.style.boxSizing='border-box';
+    if(!el.matches(OF_KEEP_OVERFLOW)){ el.style.minWidth='0'; el.style.overflowX='hidden'; }
+    el.classList.add('of-fix');
+  });
+  if(report){ try{ console.log('🔎 elements sticking out sideways:', bad.map(function(b){ return b.tag+' +'+b.over; })); }catch(e){} if(bad.length) ofPanel(bad); }
+  return bad;
+}
+function ofRun(report){
+  clearTimeout(OF_T);
+  OF_T=setTimeout(function(){ try{ ofFix(report); }catch(e){} }, 200);
+}
 /* ---------- personal system helpers ---------- */
 const L = function(ar,en){ return S.lang==='en'? en : ar; };
 function daysLeft(p){
@@ -2004,6 +2173,7 @@ function renderAll(){
   buildMarquee(); renderAnn(); renderPlans(); renderChamps(); renderPrograms();
   renderSchedule(); renderData(); renderProfile(); renderRegLock(); counters(); reveal();
   if(S.page==='admin') renderAdmin();
+  ofRun();
 }
 /* ---------- one-time registration lock ---------- */
 function regLocked(){
@@ -2457,6 +2627,8 @@ function renderBilling(){
           '<button class="btn sm bl" data-renew="'+p.id+'">💳 '+L('تجديد','Renew')+'</button>'+
           '<button class="btn sm g" data-paid="'+p.id+'">💰 '+L('دفعة','Payment')+'</button>'+
           '<button class="btn sm" data-hist="'+p.id+'">🧾 '+L('السجل','History')+'</button>'+
+          '<button class="btn sm" data-inv="'+p.id+'">🔗 '+L('رابط الدخول','Sign-in link')+'</button>'+
+          '<button class="btn sm" data-rpw="'+p.id+'">🔑 '+L('كلمة المرور','Password')+'</button>'+
         '</div>'];
     }), t('msg.noplayers'));
 }
@@ -2584,25 +2756,146 @@ function switchTab(tab){
     const p=$('#ap-'+k); if(p) p.classList.toggle('hide', k!==tab);
   });
   renderAdmin();
+  ofRun();
+  setTimeout(function(){ ofRun(); },260);
 }
 function gotoAdminTab(tab){
   if(!S.isAdmin){ ok('🔒', L('صلاحية الكابتن فقط','Captain only'), esc(L('هذه الصفحة للكابتن إياد الشربيني فقط.','This page is for Coach Eyad El-Sherbeni only.'))); return; }
   showPage('admin'); switchTab(tab);
 }
 /* ---------- player admin ---------- */
+function nextPass(){
+  const n=(DB.players||[]).length+1;
+  let p='elsherbeny'+n, i=n;
+  const used=function(x){ return (DB.players||[]).some(function(q){ return String(q.password)===x; }); };
+  while(used(p)){ i++; p='elsherbeny'+i; }
+  return p;
+}
+/* a link the player opens ONCE on his own phone — it copies his account into that device */
+function joinLink(p){
+  const d={n:p.nameAr||'', e:p.nameEn||'', u:p.username||'', p:p.password||'', ph:p.phone||'',
+    pl:p.plan||'', lv:p.level||'', st:p.status||'active', j:p.joinDate||'', s:p.startedAt||'', x:p.expiry||''};
+  let b64='';
+  try{ b64=btoa(unescape(encodeURIComponent(JSON.stringify(d)))); }catch(e){ return ''; }
+  return location.origin+location.pathname+'#join='+b64;
+}
+function checkJoinLink(){
+  const m=String(location.hash||'').match(/^#join=(.+)$/);
+  if(!m) return false;
+  let d=null;
+  try{ d=JSON.parse(decodeURIComponent(escape(atob(m[1])))); }catch(e){ return false; }
+  if(!d || !d.u) return false;
+  const nu=normUser(d.u);
+  let p=(DB.players||[]).find(function(x){ return normUser(x.username)===nu || normUser(x.nameAr)===nu; });
+  if(!p){ p=Object.assign({id:uid('pl'), champ:false}, newPlayerFields()); DB.players.push(p); }
+  const ex=newPlayerFields();
+  Object.keys(ex).forEach(function(k){ if(p[k]===undefined) p[k]=ex[k]; });
+  p.nameAr=d.n||d.u; p.nameEn=d.e||''; p.username=d.u;
+  if(d.p) p.password=d.p;
+  p.phone=d.ph||p.phone||''; p.plan=d.pl||p.plan||'شهري';
+  p.level=d.lv||p.level||'مبتدئ'; p.status=d.st||p.status||'active';
+  p.joinDate=d.j||p.joinDate||today(); p.startedAt=d.s||p.startedAt||today(); p.expiry=d.x||p.expiry||'';
+  ['wins','losses','sparring','points'].forEach(function(k){ p[k]=toInt(p[k]); });
+  saveDB();
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
+  setTimeout(function(){
+    ok('🔗', L('حسابك جاهز على هذا الجهاز','Your account is ready on this device'),
+      esc(L('سجّل الدخول باسمك وكلمة المرور:','Sign in with your name and password:'))+
+      '<div class="code mt2" dir="ltr">'+esc(d.u)+'<br>'+esc(d.p||'')+'</div>');
+  }, 600);
+  return true;
+}
+function resetPass(id){
+  const p=(DB.players||[]).find(function(x){ return x.id===id; }); if(!p) return;
+  openEdit(L('تغيير كلمة مرور اللاعب','Change player password'),[
+    {k:'username',l:L('اسم المستخدم (اسم اللاعب)','Username (player name)'),h:L('يمكن الدخول بالعربي أو بالإنجليزي','Arabic or English both work')},
+    {k:'password',l:L('كلمة المرور الجديدة','New password'),h:L('اتركها فاضية لتوليد واحدة تلقائيًا','Leave empty to auto-generate one')}
+  ],{username:p.username, password:''}, function(o){
+    const un=String(o.username||'').trim();
+    if(!validUserName(un)){ ok('⚠️','!', esc(t('err.userfmt'))); return false; }
+    const nu=normUser(un);
+    if((DB.players||[]).some(function(q){ return q.id!==id && normUser(q.username)===nu; })){ ok('⚠️','!', esc(t('err.user'))); return false; }
+    p.username=un;
+    p.password=String(o.password||'').trim() || nextPass();
+    saveDB(); renderAll();
+    showCreds(p);
+    return false;
+  });
+}
+function showJoinLink(id){
+  const p=(DB.players||[]).find(function(x){ return x.id===id; }); if(!p) return;
+  const L1=joinLink(p);
+  openModal('editModal');
+  $('#editTitle').textContent=L('🔗 رابط دخول اللاعب من موبايله','🔗 Player sign-in link');
+  $('#editBody').innerHTML =
+    '<p class="sm mut">'+esc(L('ابعت الرابط ده للاعب على واتساب. لما يفتحه على موبايله مرة واحدة، حسابه هيتحفظ على الجهاز ده ويقدر يدخل بعدها باسمه وكلمة المرور عادي.','Send this link to the player on WhatsApp. Opening it once on his phone saves his account on that device — after that he can sign in normally with his name and password.'))+'</p>'+
+    '<div class="fld"><label>'+esc(L('اسم المستخدم','Username'))+'</label><input class="inp" readonly value="'+esc(p.username)+'"></div>'+
+    '<div class="fld"><label>'+esc(L('كلمة المرور','Password'))+'</label><input class="inp" readonly value="'+esc(p.password||'')+'"></div>'+
+    '<div class="fld"><label>'+esc(L('الرابط','Link'))+'</label><textarea class="inp" readonly style="min-height:120px;font-size:.72rem" dir="ltr">'+esc(L1)+'</textarea></div>'+
+    '<div class="flex mt2"><button class="btn p" id="jlCopy">📋 '+esc(L('انسخ الرابط','Copy link'))+'</button>'+
+    '<button class="btn g" id="jlWa">💬 '+esc(L('ابعتها واتساب','Send on WhatsApp'))+'</button>'+
+    '<button class="btn" data-close="editModal">'+esc(t('btn.cancel'))+'</button></div>';
+  $('#jlCopy').onclick=function(){ copyText(L1); };
+  $('#jlWa').onclick=function(){
+    waTo(p.phone||intlNum(p.phone), (L('حسابك في نادي الكابتن إياد — افتح الرابط ده مرة واحدة واضغط دخول:\\n','Your account at Cap Eyad club — open this link once and sign in:\\n'))+L1+
+      '\\n\\n'+L('اسم المستخدم: ','Username: ')+p.username+'\\n'+L('كلمة المرور: ','Password: ')+p.password);
+  };
+}
+function showCreds(p){
+  openModal('editModal');
+  $('#editTitle').textContent=L('✅ تم تسجيل اللاعب','✅ Player created');
+  $('#editBody').innerHTML=
+    '<p class="sm mut">'+esc(L('اتنين الحاجات دول مهمين: ابعت البيانات دي للاعب، وابعت له رابط الدخول عشان يقدر يدخل من موبايله.','Two things matter here: send him these credentials, and send him the sign-in link so he can log in from his own phone.'))+'</p>'+
+    '<div class="code" dir="ltr">'+esc(p.nameAr)+'<br>'+esc(L('user','user'))+': '+esc(p.username)+'<br>'+esc(L('pass','pass'))+': '+esc(p.password||'')+'</div>'+
+    '<div class="fld mt2"><label>'+esc(L('رابط الدخول من موبايل اللاعب','Player mobile sign-in link'))+'</label><textarea class="inp" readonly style="min-height:110px;font-size:.72rem" dir="ltr">'+esc(joinLink(p))+'</textarea></div>'+
+    '<div class="flex mt2"><button class="btn p" id="jlCopy2">📋 '+esc(L('انسخ الرابط','Copy link'))+'</button>'+
+    '<button class="btn g" id="jlWa2">💬 '+esc(L('ابعتها واتساب للاعب','WhatsApp the player'))+'</button>'+
+    '<button class="btn" data-close="editModal">'+esc(t('btn.cancel'))+'</button></div>';
+  $('#jlCopy2').onclick=function(){ copyText(joinLink(p)); };
+  $('#jlWa2').onclick=function(){
+    waTo(p.phone||intlNum(p.phone), (L('أهلاً ','Hi '))+(p.nameAr||'')+L('! بيانات حسابك في نادي الكابتن إياد:\\n','! Your account at Cap Eyad club:\\n')+
+      L('اسم المستخدم: ','Username: ')+p.username+'\\n'+L('كلمة المرور: ','Password: ')+p.password+
+      '\\n\\n'+L('افتح الرابط ده مرة واحدة من موبايلك عشان تقدر تدخل:\\n','Open this link once from your phone so you can sign in:\\n')+joinLink(p));
+  };
+}
 function savePlayer(o, id){
   const un=String(o.username||'').trim();
   if(!validUserName(un)){ ok('⚠️','!', esc(t('err.userfmt'))); return false; }
   const nu=normUser(un);
   const dup=(DB.players||[]).some(function(p){ return p.id!==id && normUser(p.username)===nu; });
   if(dup){ ok('⚠️','!', esc(t('err.user'))); return false; }
+  const NUMF=['wins','losses','sparring','points'];
+  let made=null;
   if(id){
-    const p=DB.players.find(x=>x.id===id); if(p) Object.assign(p,o,{username:un});
+    const p=DB.players.find(x=>x.id===id);
+    if(p){
+      const oldPass=p.password;
+      Object.assign(p,o,{username:un});
+      const ex=newPlayerFields();
+      Object.keys(ex).forEach(function(k){ if(p[k]===undefined) p[k]=ex[k]; });
+      if(!String(o.password||'').trim()) p.password=oldPass||nextPass();
+      if(!String(p.nameAr||'').trim()) p.nameAr=un;
+      NUMF.forEach(function(k){ p[k]=toInt(p[k]); });
+      made=p;
+    }
     if(S.user && !S.isAdmin && S.user.id===id) S.user=p;
   } else {
-    DB.players.push(Object.assign({id:uid('pl'), joinDate:today(), status:'active', champ:false, payMethod:'إنستاباي'}, o, {username:un}));
+    const np=Object.assign({id:uid('pl'), joinDate:today(), status:'active', champ:false, payMethod:'إنستاباي', uid:'', password:''},
+      newPlayerFields(), o, {username:un});
+    if(!String(np.nameAr||'').trim()) np.nameAr=un;
+    if(!String(np.nameEn||'').trim()) np.nameEn=un;
+    if(!String(np.password||'').trim()) np.password=nextPass();
+    if(!np.startedAt) np.startedAt=today();
+    if(!np.level) np.level='مبتدئ';
+    if(!np.plan) np.plan='شهري';
+    ['wins','losses','sparring','points'].forEach(function(k){ np[k]=toInt(np[k]); });
+    if(np.weight && !(np.weightLog||[]).length) np.weightLog=[{d:today(), w:np.weight}];
+    DB.players.push(np);
+    made=np;
   }
-  saveDB(); renderAll(); ok('✅', t('ok'), esc(S.lang==='en'?'Player saved successfully.':'تم حفظ بيانات اللاعب بنجاح.'));
+  saveDB(); renderAll();
+  if(made && !id){ showCreds(made); return false; }
+  ok('✅', t('ok'), esc(S.lang==='en'?'Player saved successfully.':'تم حفظ بيانات اللاعب بنجاح.'));
   return true;
 }
 function waPlayerMsg(p){
@@ -2642,6 +2935,8 @@ function bindAdmin(){
     if((id=hit('data-renew'))){ renewPlayer(id); return; }
     if((id=hit('data-paid'))){ logPayment(id); return; }
     if((id=hit('data-hist'))){ paymentHistory(id); return; }
+    if((id=hit('data-inv'))){ showJoinLink(id); return; }
+    if((id=hit('data-rpw'))){ resetPass(id); return; }
     if((id=hit('data-note'))){ addCoachNote(id); return; }
     if((id=hit('data-champ'))){ toggleChamp(id); return; }
     if((id=hit('data-bcsend'))){ broadcastSend(id); return; }
@@ -2779,8 +3074,9 @@ function schFields(){
 /* ---------- global events ---------- */
 function bindGlobal(){
   document.addEventListener('click', function(e){
+    unlockAudio();
     const el=e.target.closest('button,a,.mini,.ubox,.card,.plan,.tabs button,nav a,.mq');
-    if(el && !e.target.closest('.no-sound')) punch(0.035);
+    if(el && !e.target.closest('.no-sound')) punch(0.075);
     if(el){
       const r=document.createElement('div'); r.className='punch';
       r.style.left=e.clientX+'px'; r.style.top=e.clientY+'px';
@@ -2867,11 +3163,23 @@ function bindGlobal(){
     const sp=$('#sprog'); if(sp) sp.style.width=pc+'%';
     const ft=$('#fabTop'); if(ft) ft.style.opacity = pc>6?'1':'0.45';
   }, {passive:true});
+  /* hard snap-back: if ANYTHING ever pushes the page sideways, put it back instantly.
+     This is what stops the "screen slides left and right" on phones for good. */
+  window.addEventListener('scroll', function(){
+    const x = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0;
+    if(x !== 0){ window.scrollTo(0, window.scrollY || window.pageYOffset || 0); }
+  }, {passive:true});
+  window.addEventListener('touchmove', function(){
+    const x = window.scrollX || document.documentElement.scrollLeft || 0;
+    if(x !== 0){ window.scrollTo(0, window.scrollY || 0); }
+  }, {passive:true});
 }
 
 /* ---------- init ---------- */
 function init(){
   DB=loadDB();
+  bindAudioUnlock();
+  checkJoinLink();
   buildMarquee(); fillRegSelects();
   applySettings(); renderAll();
   applyLang(DB.settings.lang||'ar');
@@ -2880,6 +3188,24 @@ function init(){
   reveal(); typeLoop();
   setTimeout(counters,600);
   $$('.yr').forEach(e=>e.textContent=new Date().getFullYear());
+  /* layout guard: also fix itself while the user types, scrolls or rotates */
+  const DBG=/(\?|&|#)debug/i.test(location.href);
+  /* hard inline guarantee — beats every stylesheet in the document */
+  try{
+    document.documentElement.style.overflowX='hidden';
+    document.body.style.overflowX='hidden';
+    document.body.style.maxWidth='100%';
+    document.documentElement.style.maxWidth='100%';
+  }catch(e){}
+  ofRun(DBG); setTimeout(function(){ ofRun(DBG); },300); setTimeout(function(){ ofRun(DBG); },1200); setTimeout(function(){ ofRun(DBG); },3000);
+  window.addEventListener('resize', function(){ ofRun(DBG); }, {passive:true});
+  window.addEventListener('orientationchange', function(){ setTimeout(function(){ ofRun(DBG); },350); });
+  document.addEventListener('focusin', function(){ ofRun(DBG); }, {passive:true});
+  document.addEventListener('input', function(e){
+    if(e.target && (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')) ofRun(DBG);
+  }, {passive:true});
+  document.addEventListener('keyup', function(){ ofRun(DBG); }, {passive:true});
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ ofRun(DBG); });
   const ph=DB.settings.phone||PHONE_DEF;
   ['#ctPhone','#ctPhone2','#aboutPhone'].forEach(function(s){ const el=$(s); if(el) el.textContent=ph; });
 }
