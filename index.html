@@ -103,6 +103,7 @@ ul{margin:0 0 .8rem; padding-inline-start:1.2rem}
 .divider{height:1px; background:linear-gradient(90deg,transparent,var(--line),transparent); margin:22px 0}
 .note{background:rgba(239,196,99,.06); border:1px dashed var(--line); border-radius:var(--rad2); padding:12px 15px; font-size:.9rem}
 .code{background:#0d0d15; border:1px solid var(--line2); border-radius:var(--rad2); padding:12px 14px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.86rem; line-height:1.7; word-break:break-all; overflow-wrap:anywhere; color:var(--gl); letter-spacing:.3px}
+/* account activation is done by the coach from the admin panel */
 /* ============ 5. SECTION HEAD ============ */
 .sec{padding:44px 0; position:relative}
 .sec-h{margin-bottom:26px; position:relative}
@@ -194,7 +195,7 @@ table.tbl tr:hover td{background:rgba(255,255,255,.025)}
 table.tbl tr:last-child td{border-bottom:0}
 .tbl-acts{display:flex; gap:6px; flex-wrap:wrap}
 /* ============ 13. MODAL ============ */
-.modal{position:fixed; inset:0; z-index:800; display:none; place-items:center; padding:16px; background:rgba(3,3,6,.82); backdrop-filter:blur(6px); overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; width:100%; max-width:100%}
+.modal{position:fixed; inset:0; z-index:960; display:none; place-items:center; padding:16px; background:rgba(3,3,6,.82); backdrop-filter:blur(6px); overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; width:100%; max-width:100%}
 .modal.on{display:grid}
 .modal-box{width:100%; max-width:620px; background:linear-gradient(180deg,#13131c,#0d0d14); border:1px solid var(--line); border-radius:22px; padding:22px; box-shadow:var(--sh); animation:pop .4s cubic-bezier(.2,.8,.3,1); max-height:92vh; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain}
 .modal-h{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px}
@@ -477,6 +478,8 @@ img,svg,video,iframe,canvas,table{max-width:100%}
     <div class="gate-foot">
       <span class="mini" id="gateLang">🌐 <span>English</span></span>
       <span class="mini" id="gateSound">🔊 <span data-i18n="btn.sound">صوت النقر</span></span>
+      <span class="mini" id="testSoundBtn" data-i18n="btn.testsnd">🔔 جرّب الصوت</span>
+      <span class="mini" style="opacity:.45;font-family:ui-monospace,monospace">site build-4</span>
       <span class="mini" data-go="store">🛒 <span data-i18n="nav.store">متجر الكابتن</span></span>
     </div>
     <p class="xs mut mt2" style="opacity:.75">© <span class="yr"></span> Cap Eyad El-Sherbeni Boxing Club — All rights reserved.</p>
@@ -962,6 +965,7 @@ img,svg,video,iframe,canvas,table{max-width:100%}
         <h3 class="mb0" data-i18n="ad.players">إدارة اللاعبين</h3>
         <div class="flex">
           <input class="inp" id="adSearch" placeholder="بحث..." style="max-width:220px">
+          <button class="btn g sm" id="actAllBtn">✅ <span data-i18n="ad.actAll">تفعيل كل الحسابات</span></button>
           <button class="btn p sm" id="addPlayer">➕ <span data-i18n="ad.addp">إضافة لاعب</span></button>
         </div>
       </div>
@@ -1231,7 +1235,9 @@ function newPlayerFields(){
     cat:'',             // boxing weight class
     progId:'',          // program assigned by the coach
     startedAt:today(),  // subscription start
-    payments:[]         // payment / renewal history — [{d,plan,amount,method,ref}]
+    payments:[],        // payment / renewal history — [{d,plan,amount,method,ref}]
+    activated:true,     // the coach flips this from the admin panel to allow / block sign-in
+    activatedAt:''
   };
 }
 function seedPlayers(){
@@ -1391,6 +1397,7 @@ const EN = {
  'gate.sub':'A boxing academy — your gateway to the ring. Sign in to reach your programs and data.',
  'f.username':'Username (player name)','f.password':'Password','gate.u.hint':'Type your name exactly as registered — in Arabic or English — then your password.',
  'gate.link.hint':'If the coach created your account and you cannot sign in, ask him for the "sign-in link" and open it once on your phone.',
+
  'gate.terms':'I commit to the club rules and the coach instructions.','btn.login':'Enter the club',
  'btn.newreg':'New subscription','btn.wa':'WhatsApp','gate.note':'No account yet? Tap “New subscription”, fill your data, and the captain gets an instant WhatsApp notification.',
  'btn.sound':'Click sound','nav.store':'Store','nav.home':'Home','nav.about':'About the Coach','nav.programs':'Training Programs',
@@ -1484,7 +1491,8 @@ const EN = {
  'pf.actionsD':'Everything you need in one tap: message the coach, request a renewal, or ask the coach to update your program.',
  'pf.a1':'Message the coach on WhatsApp','pf.a2':'Request subscription renewal','pf.a3':'Ask to update my program','pf.a4':'Send my report to the coach',
  'pf.actionsN':'All messages go straight to Coach Eyad on WhatsApp with a ready-made message containing your data.',
- 'ad.t9':'Attendance','ad.t10':'Subscriptions & renewals','ad.t11':'Group messages',
+ 'ad.t9':'Attendance','ad.t10':'Subscriptions & renewals','ad.t11':'Group messages','ad.actAll':'Activate all accounts',
+ 'btn.testsnd':'🔔 Test the sound',
  'ad.att':'Player check-in & attendance tracking','ad.attAll':'Mark everyone present',
  'ad.attNote':'Tapping “Mark present” logs attendance on the selected date and adds a point. Tap again to undo.',
  'ad.bill':'Manage subscriptions & renewals','ad.billNote':'Renewal buttons add the duration to the subscription end date and set the player active. “Start from today” resets the period.',
@@ -1578,26 +1586,62 @@ function bindAudioUnlock(){
   window.addEventListener('focus', run);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) run(); });
 }
+/* LOUD boxing "thwack".
+   The old version was a 48–170 Hz sine at gain 0.06 — phone speakers physically
+   cannot reproduce those low frequencies, which is why nobody could hear it.
+   This one puts the energy where a tiny speaker actually works (600–3000 Hz),
+   adds a real transient, and runs everything through a compressor so it is loud. */
 function punch(vol){
   if(!S.sound) return;
   const c = audio(); if(!c) return;
   if(c.state!=='running'){ try{ c.resume(); }catch(e){} }
-  const v = (vol||0.06);
+  const v = (vol==null ? 0.85 : vol);
   const t0 = c.currentTime + 0.001;
-  const o = c.createOscillator(), g = c.createGain();
-  o.type='sine'; o.frequency.setValueAtTime(170,t0);
-  o.frequency.exponentialRampToValueAtTime(48,t0+0.16);
-  g.gain.setValueAtTime(0.0001,t0);
-  g.gain.linearRampToValueAtTime(v,t0+0.008);
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+0.22);
-  o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+0.26);
-  const len = 1024, buf = c.createBuffer(1,len,c.sampleRate), dt = buf.getChannelData(0);
-  for(let i=0;i<len;i++) dt[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
-  const src=c.createBufferSource(); src.buffer=buf;
-  const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=850;
-  const ng=c.createGain(); ng.gain.value=v*0.5;
-  src.connect(f); f.connect(ng); ng.connect(c.destination); src.start(t0);
+
+  /* master chain: gain -> compressor -> speakers (keeps it loud without crackle) */
+  const out = c.createGain(); out.gain.value = 1;
+  let tail = out;
+  if(c.createDynamicsCompressor){
+    const comp = c.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.knee.value = 6; comp.ratio.value = 12;
+    comp.attack.value = 0.002; comp.release.value = 0.12;
+    out.connect(comp); tail = comp;
+  }
+  tail.connect(c.destination);
+
+  /* 1) the crack — bright noise burst, this is the part you actually hear */
+  const n = Math.max(256, Math.floor(c.sampleRate * 0.10));
+  const buf = c.createBuffer(1, n, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<n;i++){ const t=i/n; d[i]=(Math.random()*2-1)*Math.pow(1-t,5); }
+  const src = c.createBufferSource(); src.buffer = buf;
+  const bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 2100; bp.Q.value = 0.8;
+  const hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 650;
+  const ng = c.createGain(); ng.gain.value = v;
+  src.connect(bp); bp.connect(hp); hp.connect(ng); ng.connect(out); src.start(t0);
+
+  /* 2) the mid "thock" — short, cuts through any speaker */
+  const o1 = c.createOscillator(), g1 = c.createGain();
+  o1.type='triangle';
+  o1.frequency.setValueAtTime(900, t0);
+  o1.frequency.exponentialRampToValueAtTime(240, t0+0.08);
+  g1.gain.setValueAtTime(0.0001, t0);
+  g1.gain.linearRampToValueAtTime(v*0.85, t0+0.004);
+  g1.gain.exponentialRampToValueAtTime(0.0001, t0+0.15);
+  o1.connect(g1); g1.connect(out); o1.start(t0); o1.stop(t0+0.17);
+
+  /* 3) the body thump — felt more than heard, gives it weight */
+  const o2 = c.createOscillator(), g2 = c.createGain();
+  o2.type='sine';
+  o2.frequency.setValueAtTime(260, t0);
+  o2.frequency.exponentialRampToValueAtTime(85, t0+0.12);
+  g2.gain.setValueAtTime(0.0001, t0);
+  g2.gain.linearRampToValueAtTime(v*0.8, t0+0.006);
+  g2.gain.exponentialRampToValueAtTime(0.0001, t0+0.20);
+  o2.connect(g2); g2.connect(out); o2.start(t0); o2.stop(t0+0.22);
 }
+/* plays a sample so anyone can confirm the sound works */
+function testSound(){ const was=S.sound; S.sound=true; punch(0.95); if(!was) S.sound=was; }
 function setSound(on, quiet){
   S.sound = !!on; DB.settings.sound = S.sound; saveDB();
   ['#soundBtn','#fabSound','#gateSound'].forEach(function(sel){
@@ -1609,7 +1653,7 @@ function setSound(on, quiet){
     el.classList.toggle('off', !S.sound);
     el.title = S.sound ? (S.lang==='en'?'Click sound: ON':'صوت البوكس: مفعّل') : (S.lang==='en'?'Click sound: OFF':'صوت البوكس: مغلق');
   });
-  if(S.sound){ unlockAudio(); if(!quiet) punch(0.09); }
+  if(S.sound){ unlockAudio(); if(!quiet) testSound(); }
   const cb=$('#setSound'); if(cb) cb.checked = S.sound;
   if(S.sound && !quiet) punch(0.045);
 }
@@ -2234,9 +2278,45 @@ function loginResult(u,p){
   const pl=(DB.players||[]).find(function(x){
     return normUser(x.username)===nu || normUser(x.nameEn)===nu || normUser(x.nameAr)===nu;
   });
-  if(!pl) return {err:(S.lang==='en'?'This name is not registered. Ask the coach to create your account, or register a new subscription.':'الاسم غير مسجَّل. اطلب من الكابتن إنشاء حسابك أو سجّل اشتراكًا جديدًا.')};
+  if(!pl) return {notFound:true, name:String(u||'').trim(),
+    err:(S.lang==='en'?'This account is not on this device yet. Ask the coach to activate your account.':'الحساب ده مش موجود على الجهاز ده لسه. اطلب من الكابتن يفعّل حسابك.')};
+  /* the coach activates every account himself from the admin panel */
+  if(pl.activated===false) return {err:(S.lang==='en'?'Your account is not activated yet — ask the coach to activate it.':'حسابك لسه مش مفعّل — اطلب من الكابتن يفعّل حسابك.')};
+  if(pl.status==='stopped') return {err:(S.lang==='en'?'Your account is suspended by the coach.':'حسابك موقوف من الكابتن.')};
   if(String(pl.password)!==String(p)) return {err:(S.lang==='en'?'Wrong password.':'كلمة المرور غير صحيحة.')};
   return {player:pl};
+}
+/* ---------- the coach activates / suspends accounts from the admin panel ---------- */
+function isActive(p){ return !(p && p.activated===false); }
+function actChip(p){
+  return isActive(p)
+    ? '<span class="chip gr">✅ '+esc(L('مفعّل','Active'))+'</span>'
+    : '<span class="chip rd">⛔ '+esc(L('غير مفعّل','Not activated'))+'</span>';
+}
+function toggleActivate(id){
+  const p=(DB.players||[]).find(function(x){ return x.id===id; }); if(!p) return;
+  const turningOn=!isActive(p);
+  p.activated=turningOn;
+  p.activatedAt=turningOn?today():'';
+  p.coachNotes=p.coachNotes||[];
+  p.coachNotes.push({d:today(), t: turningOn
+    ? L('الكابتن فعّل حسابك ✅','The coach activated your account ✅')
+    : L('الكابتن أوقف تفعيل حسابك ⛔','The coach deactivated your account ⛔')});
+  if(turningOn && (!p.status||p.status==='pending')) p.status='active';
+  saveDB(); renderAll();
+  ok(turningOn?'✅':'⛔', L('تفعيل الحساب','Account activation'),
+    esc(turningOn
+      ? L('حساب ','The account of ')+(p.nameAr||'')+L(' اتفعّل. يقدر يدخل باسمه وكلمة المرور اللي انت ضفتها.',' is now activated. He can sign in with the name and password you set.')
+      : L('حساب ','The account of ')+(p.nameAr||'')+L(' اتوقف تفعيله — مش هيقدر يدخل.',' was deactivated — he can no longer sign in.')),
+    turningOn? [{l:L('🔗 ابعت له رابط الدخول','🔗 Send him the sign-in link'), p:true, fn:function(){ showJoinLink(p.id); }}, {l:t('btn.cancel')}]
+             : [{l:t('btn.cancel'), p:true}]);
+}
+function activateAll(){
+  const list=(DB.players||[]).filter(function(p){ return !isActive(p); });
+  if(!list.length){ ok('✅', L('الكل مفعّل','All active'), esc(L('كل اللاعبين مفعّلين بالفعل.','Every player is already activated.'))); return; }
+  list.forEach(function(p){ p.activated=true; p.activatedAt=today(); if(!p.status||p.status==='pending') p.status='active'; });
+  saveDB(); renderAll();
+  ok('✅', L('تفعيل الحسابات','Activate accounts'), esc(L('اتفعّل ','Activated ')+list.length+L(' حساب.',' account(s).')));
 }
 function afterLogin(){
   gateHome();
@@ -2485,6 +2565,9 @@ function playerFields(){
     {k:'weight',l:'الوزن (كجم)',t:'number'},{k:'height',l:'الطول (سم)',t:'number'},
     {k:'level',l:L('المستوى','Level'),t:'select',o:LEVELS},{k:'plan',l:L('الباقة','Package'),t:'select',o:PLANS},
     {k:'status',l:L('حالة الاشتراك','Subscription status'),t:'select',o:STATUS_OPTS},
+    {k:'activated',l:L('تفعيل الحساب (الكابتن فقط)','Account activation (coach only)'),t:'select',
+      h:L('غير مفعّل = اللاعب مش هيقدر يدخل خالص','Not activated = the player cannot sign in at all'),
+      o:[['true',L('✅ مفعّل — يقدر يدخل','✅ Activated — can sign in')],['false',L('⛔ غير مفعّل — ممنوع من الدخول','⛔ Not activated — no sign-in')]]},
     {k:'startedAt',l:L('بداية الاشتراك','Subscription start'),t:'date'},
     {k:'expiry',l:L('تاريخ انتهاء الاشتراك','Subscription end'),t:'date'},
     {k:'payMethod',l:L('طريقة الدفع','Payment method'),t:'select',o:PAYS},
@@ -2504,17 +2587,21 @@ function renderAdmin(){
   if(!S.isAdmin) return;
   const q=(($('#adSearch')&&$('#adSearch').value)||'').trim().toLowerCase();
   const pl=(DB.players||[]).filter(p=>!q || [p.nameAr,p.nameEn,p.username,p.phone].join(' ').toLowerCase().indexOf(q)>-1);
-  buildTbl('#adTbl',['#',t('th.name'),t('th.user'),t('th.pass'),t('th.phone'),t('th.plan'),L('الحضور','Sessions'),L('باقي','Left'),t('th.status'),t('th.act')],
+  buildTbl('#adTbl',['#',t('th.name'),t('th.user'),t('th.pass'),t('th.phone'),t('th.plan'),L('الحضور','Sessions'),L('باقي','Left'),L('الاشتراك','Plan'),L('الحساب','Account'),t('th.act')],
     pl.map(function(p,i){
       const d=daysLeft(p);
       return [String(i+1),
         '<b>'+esc(p.nameAr)+'</b>'+((p.champ)?' <span class="chip">🏆</span>':'')+'<div class="xs mut">'+esc(p.goal||p.nameEn||'')+'</div>',
         '<span dir="ltr">'+esc(p.username)+'</span>', '<span dir="ltr">'+esc(p.password)+'</span>',
         '<span dir="ltr">'+esc(p.phone)+'</span>', esc(p.plan),
-        String((p.attend||[]).length), (d===null?'—':(d+' '+L('ي','d'))), subChip(p),
+        String((p.attend||[]).length), (d===null?'—':(d+' '+L('ي','d'))), subChip(p), actChip(p),
         '<div class="tbl-acts">'+
+          '<button class="btn sm '+(isActive(p)?'d':'g')+'" data-act="'+p.id+'">'+(isActive(p)?'⛔ '+L('إلغاء التفعيل','Deactivate'):'✅ '+L('تفعيل الحساب','Activate'))+'</button>'+
+          '<button class="btn sm bl" data-inv="'+p.id+'">🔗 '+L('رابط الدخول','Sign-in link')+'</button>'+
+          '<button class="btn sm" data-rpw="'+p.id+'">🔑 '+L('كلمة المرور','Password')+'</button>'+
           '<button class="btn sm g" data-att="'+p.id+'">✅ '+L('حضور','Attend')+'</button>'+
           '<button class="btn sm bl" data-renew="'+p.id+'">💳 '+L('تجديد','Renew')+'</button>'+
+          '<button class="btn sm" data-hist="'+p.id+'">🧾 '+L('السجل','History')+'</button>'+
           '<button class="btn sm" data-note="'+p.id+'">📝 '+L('ملاحظة','Note')+'</button>'+
           '<button class="btn sm" data-champ="'+p.id+'">🏆</button>'+
           '<button class="btn sm" data-edp="'+p.id+'">✏️</button>'+
@@ -2774,7 +2861,8 @@ function nextPass(){
 /* a link the player opens ONCE on his own phone — it copies his account into that device */
 function joinLink(p){
   const d={n:p.nameAr||'', e:p.nameEn||'', u:p.username||'', p:p.password||'', ph:p.phone||'',
-    pl:p.plan||'', lv:p.level||'', st:p.status||'active', j:p.joinDate||'', s:p.startedAt||'', x:p.expiry||''};
+    pl:p.plan||'', lv:p.level||'', st:p.status||'active', j:p.joinDate||'', s:p.startedAt||'', x:p.expiry||'',
+    a:(p.activated===false?0:1)};
   let b64='';
   try{ b64=btoa(unescape(encodeURIComponent(JSON.stringify(d)))); }catch(e){ return ''; }
   return location.origin+location.pathname+'#join='+b64;
@@ -2795,6 +2883,8 @@ function checkJoinLink(){
   p.phone=d.ph||p.phone||''; p.plan=d.pl||p.plan||'شهري';
   p.level=d.lv||p.level||'مبتدئ'; p.status=d.st||p.status||'active';
   p.joinDate=d.j||p.joinDate||today(); p.startedAt=d.s||p.startedAt||today(); p.expiry=d.x||p.expiry||'';
+  p.activated=(d.a===0)?false:true;   /* the coach sent this link himself → activated */
+  p.activatedAt=today();
   ['wins','losses','sparring','points'].forEach(function(k){ p[k]=toInt(p[k]); });
   saveDB();
   try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
@@ -2847,11 +2937,19 @@ function showCreds(p){
   $('#editBody').innerHTML=
     '<p class="sm mut">'+esc(L('اتنين الحاجات دول مهمين: ابعت البيانات دي للاعب، وابعت له رابط الدخول عشان يقدر يدخل من موبايله.','Two things matter here: send him these credentials, and send him the sign-in link so he can log in from his own phone.'))+'</p>'+
     '<div class="code" dir="ltr">'+esc(p.nameAr)+'<br>'+esc(L('user','user'))+': '+esc(p.username)+'<br>'+esc(L('pass','pass'))+': '+esc(p.password||'')+'</div>'+
+    '<div class="flex mt2" style="align-items:center;gap:10px">'+actChip(p)+
+      '<button class="btn sm '+(isActive(p)?'d':'g')+'" id="jlAct">'+(isActive(p)?'⛔ '+esc(L('إلغاء التفعيل','Deactivate')):'✅ '+esc(L('تفعيل الحساب الآن','Activate the account now')))+'</button></div>'+
     '<div class="fld mt2"><label>'+esc(L('رابط الدخول من موبايل اللاعب','Player mobile sign-in link'))+'</label><textarea class="inp" readonly style="min-height:110px;font-size:.72rem" dir="ltr">'+esc(joinLink(p))+'</textarea></div>'+
     '<div class="flex mt2"><button class="btn p" id="jlCopy2">📋 '+esc(L('انسخ الرابط','Copy link'))+'</button>'+
     '<button class="btn g" id="jlWa2">💬 '+esc(L('ابعتها واتساب للاعب','WhatsApp the player'))+'</button>'+
     '<button class="btn" data-close="editModal">'+esc(t('btn.cancel'))+'</button></div>';
   $('#jlCopy2').onclick=function(){ copyText(joinLink(p)); };
+  const ja=$('#jlAct');
+  if(ja) ja.onclick=function(){
+    p.activated=!isActive(p);
+    p.activatedAt=p.activated?today():'';
+    saveDB(); renderAll(); showCreds(p);
+  };
   $('#jlWa2').onclick=function(){
     waTo(p.phone||intlNum(p.phone), (L('أهلاً ','Hi '))+(p.nameAr||'')+L('! بيانات حسابك في نادي الكابتن إياد:\\n','! Your account at Cap Eyad club:\\n')+
       L('اسم المستخدم: ','Username: ')+p.username+'\\n'+L('كلمة المرور: ','Password: ')+p.password+
@@ -2865,6 +2963,10 @@ function savePlayer(o, id){
   const dup=(DB.players||[]).some(function(p){ return p.id!==id && normUser(p.username)===nu; });
   if(dup){ ok('⚠️','!', esc(t('err.user'))); return false; }
   const NUMF=['wins','losses','sparring','points'];
+  /* the select sends "1"/"0" — turn it into a real boolean */
+  if(o.activated!==undefined && o.activated!==null && o.activated!==''){
+    o.activated=(String(o.activated)==='1'||String(o.activated)==='true');
+  } else { delete o.activated; }
   let made=null;
   if(id){
     const p=DB.players.find(x=>x.id===id);
@@ -2937,6 +3039,7 @@ function bindAdmin(){
     if((id=hit('data-hist'))){ paymentHistory(id); return; }
     if((id=hit('data-inv'))){ showJoinLink(id); return; }
     if((id=hit('data-rpw'))){ resetPass(id); return; }
+    if((id=hit('data-act'))){ toggleActivate(id); return; }
     if((id=hit('data-note'))){ addCoachNote(id); return; }
     if((id=hit('data-champ'))){ toggleChamp(id); return; }
     if((id=hit('data-bcsend'))){ broadcastSend(id); return; }
@@ -2974,6 +3077,7 @@ function bindAdmin(){
   });
   const on=function(sel,ev,fn){ const el=$(sel); if(el) el.addEventListener(ev,fn); };
   on('#adSearch','input',renderAdmin);
+  on('#actAllBtn','click',activateAll);
   on('#attDate','change',renderAttendance);
   on('#attAll','click',function(){
     const day=attDay(); let n=0;
@@ -2999,7 +3103,9 @@ function bindAdmin(){
     ok('♻️', t('ok'), esc(L('تم تصفير عدّاد التسجيل.','Registration counter cleared.')));
   });
   on('#addPlayer','click',function(){
-    openEdit('إضافة لاعب جديد', playerFields(), {status:'active',level:'مبتدئ',plan:'شهري',payMethod:'إنستاباي'}, function(o){ savePlayer(o,null); });
+    openEdit(L('إضافة لاعب جديد','Add a new player'), playerFields(),
+      {status:'active', level:'مبتدئ', plan:'شهري', payMethod:'إنستاباي', activated:'true', startedAt:today(), joinDate:today()},
+      function(o){ return savePlayer(o,null); });
   });
   on('#addProg','click',function(){ openEdit('إضافة برنامج تدريبي', progFields(), {}, function(o){
       if(!o.title) return false;
@@ -3076,7 +3182,7 @@ function bindGlobal(){
   document.addEventListener('click', function(e){
     unlockAudio();
     const el=e.target.closest('button,a,.mini,.ubox,.card,.plan,.tabs button,nav a,.mq');
-    if(el && !e.target.closest('.no-sound')) punch(0.075);
+    if(el && !e.target.closest('.no-sound')) punch(0.85);
     if(el){
       const r=document.createElement('div'); r.className='punch';
       r.style.left=e.clientX+'px'; r.style.top=e.clientY+'px';
@@ -3119,12 +3225,18 @@ function bindGlobal(){
   });
   const eye=function(btn){ const el=$('#'+btn.getAttribute('data-eye')); if(!el) return; el.type = el.type==='password'?'text':'password'; };
   document.addEventListener('click', function(e){ const b=e.target.closest('[data-eye]'); if(b){ eye(b); } });
+
   $('#loginForm').addEventListener('submit', function(e){
     e.preventDefault();
     const err=$('#loginErr'); err.textContent='';
     if($('#lgree') && !$('#lgree').checked){ err.textContent=S.lang==='en'?'Please accept the club rules.':'من فضلك وافق على قواعد النادي.'; return; }
-    const res=loginResult($('#lu').value.trim(), $('#lp').value);
-    if(res.err){ err.textContent=res.err; $('#loginBtn').classList.add('shake'); setTimeout(function(){ $('#loginBtn').classList.remove('shake'); },450); return; }
+    const uname=$('#lu').value.trim();
+    const res=loginResult(uname, $('#lp').value);
+    if(res.err || res.notFound){
+      err.textContent=res.err;
+      $('#loginBtn').classList.add('shake'); setTimeout(function(){ $('#loginBtn').classList.remove('shake'); },450);
+      return;
+    }
     if(res.admin){ S.isAdmin=true; S.user={id:'admin', username:DB.admins[0].username, nameAr:'الكابتن إياد الشربيني', status:'active'}; }
     else { S.isAdmin=false; S.user=res.player; }
     punch(0.06);
@@ -3140,6 +3252,12 @@ function bindGlobal(){
   $('#soundBtn').addEventListener('click', function(){ setSound(!S.sound); });
   $('#fabSound').addEventListener('click', function(){ setSound(!S.sound); });
   $('#gateSound').addEventListener('click', function(){ setSound(!S.sound); });
+  const tsb=$('#testSoundBtn');
+  if(tsb) tsb.addEventListener('click', function(){
+    unlockAudio();
+    if(!S.sound) setSound(true, true);
+    testSound();
+  });
   $('#gateBack').addEventListener('click', gateHome);
   $('#gateWa').addEventListener('click', function(){
     openWA(S.lang==='en'?'Hello Coach Eyad, I would like to ask about boxing training.':'السلام عليكم كابتن إياد، أريد الاستفسار عن التدريب في النادي.');
@@ -3210,6 +3328,182 @@ function init(){
   ['#ctPhone','#ctPhone2','#aboutPhone'].forEach(function(s){ const el=$(s); if(el) el.textContent=ph; });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+</script>
+
+<!-- =====================================================================
+     STANDALONE SELF-HEAL LAYER — deliberately kept in its OWN <script> block
+     so it still runs even if anything above it throws. It:
+       1) clamps anything that sticks out sideways past the screen
+       2) snaps the page back if it ever scrolls horizontally
+       3) shows a visible badge if a problem survives, and reports JS errors
+     ===================================================================== -->
+<script>
+(function(){
+  'use strict';
+  var BUILD = 'build-4', OF_DEBOUNCE = null, OF_LAST_N = -1, OF_SHOWN = false;
+
+  function W(){ return document.documentElement.clientWidth || window.innerWidth || 0; }
+  function styleSig(el){
+    return (el.className && typeof el.className === 'string' ? el.className : '') + '#' + el.tagName;
+  }
+  /* ignore anything that is *meant* to scroll or clip sideways, and decorations */
+  var KEEP = '#app,body,html,main,.wrap,.page,header.top,.tbl-wrap,.tabs,nav,.bgfx,.punch,.sprog,.mq,#ofBadge,#ofPanel,.modal,.gate';
+
+  function keepOverflow(el){
+    try{ return el.matches(KEEP) || el.closest('.tbl-wrap,.tabs,nav,.bgfx,.punch,.sprog,.mq,#ofBadge,#ofPanel') !== null; }
+    catch(e){ return true; }
+  }
+  function clippedBy(el){
+    var p = el.parentElement;
+    while(p && p !== document.documentElement){
+      var ox = '';
+      try{ ox = getComputedStyle(p).overflowX || ''; }catch(e){}
+      if(ox === 'auto' || ox === 'scroll' || ox === 'hidden' || ox === 'clip') return true;
+      p = p.parentElement;
+    }
+    return false;
+  }
+  function scan(){
+    var cw = W(), bad = [], roots = [];
+    ['app','gate'].forEach(function(id){
+      var r = document.getElementById(id);
+      if(r && getComputedStyle(r).display !== 'none') roots.push(r);
+    });
+    roots.forEach(function(root){
+      var list = root.querySelectorAll('*');
+      for(var i=0;i<list.length;i++){
+        var el = list[i];
+        if(el.id === 'ofBadge' || el.id === 'ofPanel') continue;
+        var cs; try{ cs = getComputedStyle(el); }catch(e){ continue; }
+        if(cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') continue;
+        if(parseFloat(cs.opacity || '1') === 0) continue;
+        var r = el.getBoundingClientRect();
+        if(!r.width && !r.height) continue;
+        var over = Math.max(r.right - cw, -r.left);
+        if(over > 1.5 && !clippedBy(el)) bad.push({ el: el, over: Math.round(over) });
+      }
+    });
+    return bad;
+  }
+  function fix(){
+    var cw = W(), bad = scan();
+    for(var i=0;i<bad.length;i++){
+      var el = bad[i].el;
+      try{
+        el.style.maxWidth = cw + 'px';
+        el.style.boxSizing = 'border-box';
+        if(!keepOverflow(el)){ el.style.minWidth = '0'; el.style.overflowX = 'hidden'; }
+        el.setAttribute('data-of-fixed','1');
+      }catch(e){}
+    }
+    var still = scan();
+    OF_LAST_N = still.length;
+    if(still.length){
+      if(!OF_SHOWN) badge(still);
+    } else {
+      hideBadge();
+    }
+    return still;
+  }
+  function run(){ clearTimeout(OF_DEBOUNCE); OF_DEBOUNCE = setTimeout(function(){ try{ fix(); }catch(e){} }, 220); }
+
+  /* ---------- visible warning badge (so the problem can be photographed) ---------- */
+  function hideBadge(){ var b = document.getElementById('ofBadge'); if(b) b.style.display = 'none'; OF_SHOWN = false; }
+  function badge(list){
+    var b = document.getElementById('ofBadge');
+    if(!b){
+      b = document.createElement('div');
+      b.id = 'ofBadge';
+      b.style.cssText = 'position:fixed;z-index:10000;inset-inline-start:10px;bottom:10px;max-width:78vw;background:#141018;'+
+        'border:1px solid #efc463;border-radius:12px;padding:9px 12px;font:600 12px/1.5 system-ui,sans-serif;color:#ffd9a0;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.6)';
+      b.onclick = function(){
+        var d = document.getElementById('ofPanel');
+        var open = d && d.style.display === 'block';
+        if(open){ if(d) d.style.display='none'; return; }
+        if(!d){ d = document.createElement('div'); d.id='ofPanel';
+          d.style.cssText = 'position:fixed;z-index:10001;inset-inline:8px;bottom:8px;max-height:46vh;overflow:auto;background:rgba(6,6,10,.98);'+
+            'border:1px solid #efc463;border-radius:14px;padding:12px 14px;font:400 11px/1.7 ui-monospace,Consolas,monospace;color:#ffd9a0;direction:ltr;text-align:left';
+          document.body.appendChild(d);
+        }
+        var rows = list.map(function(x){
+          var cls = (x.el.className && typeof x.el.className === 'string') ? '.' + x.el.className.trim().split(/\s+/).slice(0,3).join('.') : '';
+          return '<div style="border-top:1px dashed rgba(255,255,255,.15);padding:3px 0;word-break:break-all">' +
+            (x.el.tagName.toLowerCase() + (x.el.id ? '#' + x.el.id : '') + cls) + ' → +' + x.over + 'px</div>';
+        }).join('');
+        d.innerHTML = '<b style="color:#fff">LAYOUT: ' + list.length + ' element(s) outside the screen (' + BUILD + ')</b>' + rows;
+        d.style.display = 'block';
+      };
+      document.body.appendChild(b);
+    }
+    b.textContent = '⚠️ ' + list.length + ' عنصر خارج الشاشة — اضغط للتفاصيل (' + BUILD + ')';
+    b.style.display = 'block';
+    OF_SHOWN = true;
+  }
+
+  /* ---------- stop any horizontal movement, no matter what pushes it ---------- */
+  function snapBack(){
+    var x = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    if(x !== 0){ try{ window.scrollTo(0, window.pageYOffset || document.documentElement.scrollTop || 0); }catch(e){} }
+  }
+
+  /* ---------- report JS errors instead of failing silently ---------- */
+  function reportError(msg){
+    var b = document.getElementById('ofBadge');
+    if(!b) badge([]);
+    b = document.getElementById('ofBadge');
+    if(b){ b.textContent = '⚠️ خطأ في الصفحة — اضغط (' + BUILD + ')'; b.style.display = 'block'; }
+    try{ console.error('[site]', msg); }catch(e){}
+  }
+
+  /* ---------- boot ---------- */
+  function boot(){
+    try{
+      document.documentElement.style.overflowX = 'hidden';
+      document.body.style.overflowX = 'hidden';
+      document.documentElement.style.maxWidth = '100%';
+      document.body.style.maxWidth = '100%';
+    }catch(e){}
+    run();
+    setTimeout(run, 300); setTimeout(run, 1200); setTimeout(run, 3000);
+    var badgeEl = document.getElementById('ofBadge');
+    if(badgeEl) badgeEl.style.display = 'none';
+
+    if(window.addEventListener){
+      window.addEventListener('resize', run, { passive: true });
+      window.addEventListener('orientationchange', function(){ setTimeout(run, 350); });
+      window.addEventListener('scroll', snapBack, { passive: true });
+      document.addEventListener('touchmove', snapBack, { passive: true });
+      document.addEventListener('focusin', run, { passive: true });
+      document.addEventListener('input', run, { passive: true });
+      document.addEventListener('keyup', function(e){
+        var t = e.target;
+        if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) run();
+      }, { passive: true });
+    }
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ run(); });
+    window.addEventListener('load', function(){ setTimeout(run, 400); });
+
+    /* build marker, so it is always obvious which version is live */
+    try{
+      window.ACCIO_BUILD = BUILD;
+      var marks = document.querySelectorAll('.ft .wrap');
+      if(marks.length){
+        var m = document.createElement('div');
+        m.style.cssText = 'margin-top:14px;font:600 11px/1.6 ui-monospace,Consolas,monospace;opacity:.5;letter-spacing:.5px';
+        m.textContent = 'site ' + BUILD;
+        marks[marks.length-1].appendChild(m);
+      }
+    }catch(e){}
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.addEventListener('error', function(ev){
+    try{ reportError((ev && ev.message) ? ev.message : 'unknown'); }catch(e){}
+  });
+  window.addEventListener('unhandledrejection', function(){ try{ reportError('promise'); }catch(e){} });
+})();
 </script>
 </body>
 </html>
